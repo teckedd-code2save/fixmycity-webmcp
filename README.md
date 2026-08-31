@@ -34,7 +34,7 @@ Resident-authored text is marked as untrusted content in the tool annotations. T
 Resident portal ─┐
 Operations UI ───┼─ Next/Vinext routes ─ D1 civic records
 Inspector app ───┘          │          └ R2 photo evidence
-                            ├ MapLibre + OpenFreeMap vector maps
+                            ├ Leaflet + OpenStreetMap raster maps
                             ├ OSRM road directions
 WebMCP agent ─ typed tools ─┴ Open-Meteo live conditions
 ```
@@ -68,7 +68,7 @@ Then exercise the real workflow through the UI or APIs: create a report, confirm
 
 ## Integration policy
 
-- MapLibre renders OpenFreeMap vector tiles built from OpenStreetMap data; no API key is required.
+- Leaflet renders OpenStreetMap raster tiles without a vendor API key.
 - Project OSRM supplies road-following route geometry; no API key is required.
 - Open-Meteo requires no API key.
 - D1 and R2 are first-party runtime bindings, not developer-machine services.

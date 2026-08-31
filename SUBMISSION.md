@@ -24,7 +24,7 @@ FixMyCity gives each actor a purpose-built surface:
 - Operators see the agent's evidence and confidence before approving any merge or assignment.
 - Field inspectors receive the approved route, open navigation, add an inspection note, and move work through inspecting, resolved, or blocked states.
 
-The complete loop uses persistent D1 records, R2 evidence storage, live weather from Open-Meteo, OpenStreetMap vector maps, and OSRM road directions. Nothing important is represented only as a front-end animation.
+The complete loop uses persistent D1 records, R2 evidence storage, live weather from Open-Meteo, OpenStreetMap maps, and OSRM road directions. Nothing important is represented only as a front-end animation.
 
 ## How we used WebMCP
 
@@ -39,7 +39,7 @@ This is not a chatbot placed beside a dashboard. WebMCP makes the working civic 
 - React and Vinext for the responsive multi-role web application
 - Cloudflare D1 for civic records and audit history
 - Cloudflare R2 for uploaded photo evidence
-- MapLibre and OpenFreeMap for live OpenStreetMap vector maps
+- Leaflet and OpenStreetMap for live incident maps
 - Project OSRM for road-following route geometry
 - Open-Meteo for current Accra conditions and rain-watch context
 - WebMCP imperative API for eight discoverable, typed browser tools
@@ -82,7 +82,7 @@ The next production step is municipality-managed role assignment on top of the i
 - [ ] Public deployment works in a signed-out browser
 - [ ] Resident report, photo upload, duplicate proposal, route assignment, and inspector resolution all pass in production
 - [ ] All eight WebMCP tools are discoverable on the deployed URL
-- [ ] Keyless vector maps and road-following directions render in production
+- [ ] Keyless maps and road-following directions render in production
 - [ ] GitHub repository is public and contains no secrets
 - [ ] Demo video is uploaded to YouTube and plays without sign-in
 - [ ] Screenshots, repository URL, live URL, and video URL are added to Devpost
