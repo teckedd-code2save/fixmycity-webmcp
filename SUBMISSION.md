@@ -41,7 +41,7 @@ This is not a chatbot placed beside a dashboard. WebMCP makes the working civic 
 - Cloudflare R2 for uploaded photo evidence
 - Leaflet and OpenStreetMap for live incident maps
 - Project OSRM for road-following route geometry
-- Open-Meteo for current Accra conditions and rain-watch context
+- Open-Meteo with MET Norway fallback for current Accra conditions and rain-watch context
 - WebMCP imperative API for eight discoverable, typed browser tools
 - Sites for a single hosted environment shared by residents, operators, inspectors, and judges
 

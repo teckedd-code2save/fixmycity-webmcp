@@ -1,6 +1,18 @@
 import { json } from '@/lib/civic-db';
 
 const ACCRA = { latitude: 5.6037, longitude: -0.187 };
+const weatherResponse=(data:unknown)=>Response.json(data,{headers:{'Cache-Control':'public, max-age=300, s-maxage=600, stale-while-revalidate=1800'}});
+
+async function metNorwayFallback(){
+  const response=await fetch(`https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=${ACCRA.latitude}&lon=${ACCRA.longitude}`,{headers:{Accept:'application/json','User-Agent':'FixMyCity-WebMCP/1.0 https://github.com/teckedd-code2save/fixmycity-webmcp'}});
+  if(!response.ok)throw new Error(`MET Norway returned ${response.status}`);
+  const data=await response.json() as {properties?:{timeseries?:Array<{time:string;data:{instant?:{details?:{air_temperature?:number;wind_speed?:number}};next_1_hours?:{summary?:{symbol_code?:string};details?:{precipitation_amount?:number}}}}>}};
+  const periods=data.properties?.timeseries?.slice(0,6)??[];const current=periods[0];const details=current?.data.instant?.details;
+  if(!current||details?.air_temperature===undefined)throw new Error('MET Norway returned no current conditions');
+  const precipitationMm=periods.reduce((sum,period)=>sum+(period.data.next_1_hours?.details?.precipitation_amount??0),0);
+  const symbols=periods.map(period=>period.data.next_1_hours?.summary?.symbol_code??'').join(' ');const rainWatch=precipitationMm>0.1||/(rain|showers|thunder|sleet)/i.test(symbols);
+  return {source:'MET Norway Locationforecast',location:'Accra',observedAt:current.time,temperatureC:details.air_temperature,precipitationMm:Number(precipitationMm.toFixed(1)),windKph:details.wind_speed!==undefined?Number((details.wind_speed*3.6).toFixed(1)):undefined,next6HoursRainChance:null,rainWatch};
+}
 
 export async function GET() {
   const query = new URLSearchParams({
@@ -34,7 +46,7 @@ export async function GET() {
 
     const rainChance = Math.max(0, ...(data.hourly?.precipitation_probability ?? [0]));
     const rainWatch = rainChance >= 55 || (current.rain ?? 0) > 0;
-    return json({
+    return weatherResponse({
       source: 'Open-Meteo',
       location: 'Accra',
       observedAt: current.time,
@@ -46,12 +58,6 @@ export async function GET() {
       rainWatch,
     });
   } catch (error) {
-    return json(
-      {
-        error: 'Live weather is temporarily unavailable.',
-        detail: error instanceof Error ? error.message : 'Unknown weather error',
-      },
-      503,
-    );
+    try{return weatherResponse(await metNorwayFallback())}catch(fallbackError){return json({error:'Live weather is temporarily unavailable.',detail:[error,fallbackError].map(value=>value instanceof Error?value.message:'Unknown weather error').join(' · ')},503)}
   }
 }

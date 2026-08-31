@@ -36,7 +36,7 @@ Operations UI ───┼─ Next/Vinext routes ─ D1 civic records
 Inspector app ───┘          │          └ R2 photo evidence
                             ├ Leaflet + OpenStreetMap raster maps
                             ├ OSRM road directions
-WebMCP agent ─ typed tools ─┴ Open-Meteo live conditions
+WebMCP agent ─ typed tools ─┴ Open-Meteo with MET Norway fallback
 ```
 
 The three actors receive responsive web surfaces from the same production URL:
@@ -73,6 +73,7 @@ Workflow tests use the isolated local D1/R2 environment, where test reports cann
 - Leaflet renders OpenStreetMap raster tiles without a vendor API key.
 - Project OSRM supplies road-following route geometry; no API key is required.
 - Open-Meteo requires no API key.
+- MET Norway Locationforecast provides a second keyless weather path when Open-Meteo is rate-limited.
 - D1 and R2 are first-party runtime bindings, not developer-machine services.
 - The repository contains no credentials. Runtime values are supplied by the hosting environment.
 - When maps, routing, or weather are unavailable, the product reports the integration failure; it does not fabricate results.
