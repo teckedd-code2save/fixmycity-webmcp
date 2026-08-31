@@ -34,7 +34,8 @@ Resident-authored text is marked as untrusted content in the tool annotations. T
 Resident portal ─┐
 Operations UI ───┼─ Next/Vinext routes ─ D1 civic records
 Inspector app ───┘          │          └ R2 photo evidence
-                            ├ Mapbox maps + directions
+                            ├ MapLibre + OpenFreeMap vector maps
+                            ├ OSRM road directions
 WebMCP agent ─ typed tools ─┴ Open-Meteo live conditions
 ```
 
@@ -50,8 +51,6 @@ Requirements: Node.js 22.13 or newer.
 
 ```bash
 npm install
-cp .env.example .env.local
-# Add a public Mapbox token to .env.local
 npm run dev
 ```
 
@@ -69,11 +68,12 @@ Then exercise the real workflow through the UI or APIs: create a report, confirm
 
 ## Integration policy
 
-- Mapbox uses a public, read-only browser token. No secret scopes are required.
+- MapLibre renders OpenFreeMap vector tiles built from OpenStreetMap data; no API key is required.
+- Project OSRM supplies road-following route geometry; no API key is required.
 - Open-Meteo requires no API key.
 - D1 and R2 are first-party runtime bindings, not developer-machine services.
 - The repository contains no credentials. Runtime values are supplied by the hosting environment.
-- When Mapbox or weather is unavailable, the product shows the integration as unavailable; it does not fabricate results.
+- When maps, routing, or weather are unavailable, the product reports the integration failure; it does not fabricate results.
 
 ## Challenge safety boundary
 
