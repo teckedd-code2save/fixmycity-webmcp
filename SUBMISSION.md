@@ -59,6 +59,7 @@ We also made integrations honest. Missing map configuration is reported as unava
 - Priority route planning with a human approval checkpoint and field-team handoff
 - Persistent reports, assignments, proposals, audit updates, and photo evidence
 - A reproducible deployment with no local database or storage services for judges to install
+- A clean production workspace that never presents fabricated incidents as city activity
 
 ## What we learned
 

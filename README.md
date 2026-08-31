@@ -54,7 +54,7 @@ npm install
 npm run dev
 ```
 
-The local Cloudflare runtime provisions D1 and R2 bindings and seeds a compact Accra demonstration dataset on first request. Open `http://localhost:3000`.
+The local Cloudflare runtime provisions isolated D1 and R2 bindings. It does not seed incident records. Open `http://localhost:3000` and submit test reports locally when exercising the workflow.
 
 ## Verify
 
@@ -65,6 +65,8 @@ npm audit --omit=dev
 ```
 
 Then exercise the real workflow through the UI or APIs: create a report, confirm it, plan a route, approve assignment, and update it from the inspector portal.
+
+Workflow tests use the isolated local D1/R2 environment, where test reports cannot appear on the public site. Production verification is read-only: route health, empty-state behavior, map and weather integrations, WebMCP discovery, and actor-page rendering. A real production report is created only from an actual resident submission.
 
 ## Integration policy
 
@@ -77,7 +79,7 @@ Then exercise the real workflow through the UI or APIs: create a report, confirm
 
 ## Challenge safety boundary
 
-This build is an isolated challenge workspace with seeded civic records and named demonstration actors. It is not connected to a municipal system of record. Production adoption would connect the existing ChatGPT sign-in scaffold to municipality-managed role assignments before allowing operator or inspector writes.
+This challenge deployment is a standalone civic workspace, not a municipal system of record. Its public database contains only reports submitted through FixMyCity; fabricated incidents are never inserted for presentation. The field surface uses a neutral team identity until municipality-managed role assignments are connected to the included sign-in scaffold.
 
 ## License
 

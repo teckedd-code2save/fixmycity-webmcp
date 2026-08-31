@@ -26,7 +26,7 @@ export async function POST(request: Request) {
   const id = reportId(); const now = Date.now();
   const score = priorityScore({ severity: text(body.severity), affectedPeople: Number(body.affectedPeople ?? 1), confirmations: 1, category: text(body.category), landmark: text(body.landmark) });
   await database().prepare(`INSERT INTO reports (id,title,description,category,severity,status,address,landmark,latitude,longitude,affected_people,confirmations,reporter_id,image_key,priority_score,created_at,updated_at) VALUES (?,?,?,?,?,'reported',?,?,?,?,?,1,?,?,?, ?,?)`)
-    .bind(id,text(body.title),text(body.description),text(body.category),text(body.severity),text(body.address),text(body.landmark)||null,Number(body.latitude),Number(body.longitude),Number(body.affectedPeople ?? 1),'demo-resident',text(body.imageKey)||null,score,now,now).run();
+    .bind(id,text(body.title),text(body.description),text(body.category),text(body.severity),text(body.address),text(body.landmark)||null,Number(body.latitude),Number(body.longitude),Number(body.affectedPeople ?? 1),'public-resident',text(body.imageKey)||null,score,now,now).run();
   const report = await database().prepare('SELECT * FROM reports WHERE id = ?').bind(id).first();
   return json({ report }, 201);
 }

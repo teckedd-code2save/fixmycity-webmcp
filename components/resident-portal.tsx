@@ -1,11 +1,12 @@
 'use client';
 
-import { MouseEvent, SyntheticEvent, useEffect, useState } from 'react';
+import { SyntheticEvent, useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Camera, CheckCircle2, LocateFixed, MapPin, Radio, Send, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, Camera, CheckCircle2, MapPin, Radio, Send, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { LocationPicker } from '@/components/location-picker';
 
 type Report = { id:string;title:string;address:string;status:string;severity:string;confirmations:number };
 
@@ -13,7 +14,6 @@ export function ResidentPortal() {
   const [reports,setReports]=useState<Report[]>([]); const [submitting,setSubmitting]=useState(false); const [success,setSuccess]=useState<string|null>(null);
   const [point,setPoint]=useState({latitude:5.5671,longitude:-0.1902});
   useEffect(()=>{ void fetch('/api/reports').then(async(r)=>await r.json() as {reports:Report[]}).then((data)=>setReports(data.reports?.slice(0,4)??[])); },[]);
-  function choosePoint(event:MouseEvent<HTMLButtonElement>) { const box=event.currentTarget.getBoundingClientRect(); const x=(event.clientX-box.left)/box.width; const y=(event.clientY-box.top)/box.height; setPoint({latitude:5.59-y*.045,longitude:-0.215+x*.05}); }
   async function submit(event:SyntheticEvent<HTMLFormElement,SubmitEvent>) {
     event.preventDefault(); setSubmitting(true); setSuccess(null); const form=new FormData(event.currentTarget); let imageKey:string|undefined; const file=form.get('photo');
     if(file instanceof File&&file.size){const upload=new FormData();upload.set('file',file);const response=await fetch('/api/uploads',{method:'POST',body:upload});const result=await response.json() as {error?:string;key:string};if(!response.ok){setSubmitting(false);alert(result.error);return;}imageKey=result.key;}
@@ -31,8 +31,8 @@ export function ResidentPortal() {
         <label htmlFor="report-title">Short title<Input id="report-title" name="title" required minLength={4} placeholder="e.g. Blocked drain flooding the pavement"/></label>
         <div className="field-pair"><label htmlFor="report-category">Category<select id="report-category" name="category" required defaultValue="drainage"><option value="drainage">Blocked drainage</option><option value="flooding">Flooding</option><option value="road">Road damage</option><option value="lighting">Street lighting</option><option value="waste">Waste</option></select></label><label htmlFor="report-severity">Urgency<select id="report-severity" name="severity" required defaultValue="high"><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option><option value="critical">Critical danger</option></select></label></div>
         <label htmlFor="report-description">What can you observe?<Textarea id="report-description" name="description" required minLength={10} rows={4} placeholder="Describe what you can see, who is affected, and any immediate hazard."/></label>
-        <div className="form-heading compact"><span>02</span><div><h2>Where is it?</h2><p>Click the map to place the report precisely.</p></div></div>
-        <button type="button" className="report-map" onClick={choosePoint}><i style={{left:`${((point.longitude+.215)/.05)*100}%`,top:`${((5.59-point.latitude)/.045)*100}%`}}><MapPin/></i><span>KANDA</span><span>RIDGE</span><span>OSU</span><small><LocateFixed/> Click to move pin</small></button>
+        <div className="form-heading compact"><span>02</span><div><h2>Where is it?</h2><p>Use your current location, then adjust the real map pin if needed.</p></div></div>
+        <LocationPicker value={point} onChange={setPoint}/>
         <div className="field-pair"><label htmlFor="report-address">Street or area<Input id="report-address" name="address" required placeholder="Nii Nortei Nyanchi Street"/></label><label htmlFor="report-landmark">Nearby landmark<Input id="report-landmark" name="landmark" placeholder="School, clinic or junction"/></label></div>
         <div className="field-pair"><label htmlFor="affected-people">People affected<Input id="affected-people" name="affectedPeople" type="number" min="1" defaultValue="1"/></label><label htmlFor="report-photo" className="photo-label">Photo evidence<span><Camera/> Add JPEG, PNG or WebP<input id="report-photo" name="photo" type="file" accept="image/jpeg,image/png,image/webp"/></span></label></div>
         {success&&<div className="success-banner"><CheckCircle2/><div><strong>Report {success} received</strong><span>It is now visible to city operations and WebMCP agents.</span></div></div>}

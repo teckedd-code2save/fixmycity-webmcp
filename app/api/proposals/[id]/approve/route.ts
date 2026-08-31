@@ -12,7 +12,7 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
     ...duplicates.map((reportId) => db.prepare(`UPDATE reports SET duplicate_of = ?, status = 'triaged', updated_at = ? WHERE id = ?`).bind(canonicalId,now,reportId)),
     db.prepare(`UPDATE reports SET confirmations = confirmations + ?, status = 'triaged', updated_at = ? WHERE id = ?`).bind(duplicates.length,now,canonicalId),
     db.prepare(`UPDATE proposals SET status = 'approved', reviewed_at = ? WHERE id = ?`).bind(now,id),
-    db.prepare(`INSERT INTO updates (id,report_id,actor_id,action,note,created_at) VALUES (?,?,?,?,?,?)`).bind(entityId('UPD'),canonicalId,'demo-operator','reports_merged',`${duplicates.length} duplicate reports merged after human approval.`,now),
+    db.prepare(`INSERT INTO updates (id,report_id,actor_id,action,note,created_at) VALUES (?,?,?,?,?,?)`).bind(entityId('UPD'),canonicalId,'operations-user','reports_merged',`${duplicates.length} duplicate reports merged after human approval.`,now),
   ]);
   return json({ ok:true, canonicalReportId: canonicalId, mergedReportIds: duplicates, proposalId:id });
 }

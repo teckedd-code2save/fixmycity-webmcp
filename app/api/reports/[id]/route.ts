@@ -18,7 +18,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
   const now = Date.now();
   await database().batch([
     database().prepare('UPDATE reports SET status = ?, updated_at = ? WHERE id = ?').bind(status,now,id),
-    database().prepare('INSERT INTO updates (id,report_id,actor_id,action,note,created_at) VALUES (?,?,?,?,?,?)').bind(entityId('UPD'),id,'demo-operator',`status:${status}`,text(body.note)||null,now),
+    database().prepare('INSERT INTO updates (id,report_id,actor_id,action,note,created_at) VALUES (?,?,?,?,?,?)').bind(entityId('UPD'),id,'operations-user',`status:${status}`,text(body.note)||null,now),
   ]);
   return json({ ok: true, id, status, updatedAt: now });
 }

@@ -64,7 +64,7 @@ export function WebMCPBridge() {
       {
         name:'assign_inspection_route', title:'Assign an approved inspection route', annotations:{readOnlyHint:false},
         description:'Assign an existing route proposal to a field inspector. This creates assignments and changes report statuses; call only after explicit human approval.',
-        inputSchema:{type:'object',properties:{proposalId:{type:'string'},inspectorId:{type:'string',default:'INS-001'},humanApproved:{type:'boolean',const:true}},required:['proposalId','humanApproved'],additionalProperties:false},
+        inputSchema:{type:'object',properties:{proposalId:{type:'string'},inspectorId:{type:'string',default:'FIELD-TEAM-01'},humanApproved:{type:'boolean',const:true}},required:['proposalId','humanApproved'],additionalProperties:false},
         execute:async(input)=>{ const result=await api('/api/routes/assign',{method:'POST',body:JSON.stringify({proposalId:input.proposalId,inspectorId:input.inspectorId,confirm:input.humanApproved})}); notify('assign_inspection_route',result); return result; },
       },
       {
