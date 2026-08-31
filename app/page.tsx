@@ -28,7 +28,7 @@ export default function Home() {
       <div className="app-shell">
         <section className="workspace" id="operations">
           <div className="workspace-heading">
-            <div><WeatherStatus /><h1>City operations</h1><p>Review real reports, approve agent proposals, and dispatch field work.</p></div>
+            <div><WeatherStatus /><h1>City operations</h1><p>Review reports, approve agent proposals, and dispatch field work.</p></div>
           </div>
 
           <LiveOperationsMetrics />

@@ -1,6 +1,7 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
 @import 'shadcn/tailwind.css';
+@import 'leaflet/dist/leaflet.css';
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
@@ -14,7 +15,7 @@
 }
 
 :root {
-  --font-display: 'Avenir Next', 'Trebuchet MS', sans-serif; --font-body: 'Avenir Next', 'Gill Sans', sans-serif;
+  --font-display: 'Space Grotesk Variable', 'Arial', sans-serif; --font-body: 'Manrope Variable', 'Arial', sans-serif;
   --background: #f2f2ec; --foreground: #16221c; --card: #fcfcf8; --card-foreground: #16221c; --popover: #fff; --popover-foreground: #16221c;
   --primary: #164e3a; --primary-foreground: #f7fff9; --secondary: #e7e9df; --secondary-foreground: #25342c; --muted: #e9ebe5; --muted-foreground: #677169;
   --accent: #dff16b; --accent-foreground: #203119; --destructive: #bd352d; --border: #d8dbd2; --input: #d8dbd2; --ring: #2f765d; --radius: .85rem;
