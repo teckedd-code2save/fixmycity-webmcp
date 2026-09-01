@@ -27,10 +27,19 @@ export async function POST(request: Request) {
   const allowedCategories = ['flooding','drainage','road','lighting','waste'];
   const allowedSeverities = ['low','medium','high','critical'];
   if (!allowedCategories.includes(String(body.category)) || !allowedSeverities.includes(String(body.severity))) return json({ error: 'Invalid category or severity.' }, 400);
+  const latitude = Number(body.latitude);
+  const longitude = Number(body.longitude);
+  if (!Number.isFinite(latitude) || latitude < -90 || latitude > 90 || !Number.isFinite(longitude) || longitude < -180 || longitude > 180) {
+    return json({ error: 'Provide valid report coordinates.' }, 400);
+  }
+  const affectedPeople = Number(body.affectedPeople ?? 1);
+  if (!Number.isInteger(affectedPeople) || affectedPeople < 1 || affectedPeople > 10_000) {
+    return json({ error: 'Affected people must be a whole number from 1 to 10,000.' }, 400);
+  }
   const id = reportId(); const now = Date.now();
-  const score = priorityScore({ severity: text(body.severity), affectedPeople: Number(body.affectedPeople ?? 1), confirmations: 1, category: text(body.category), landmark: text(body.landmark) });
+  const score = priorityScore({ severity: text(body.severity), affectedPeople, confirmations: 1, category: text(body.category), landmark: text(body.landmark) });
   await database().prepare(`INSERT INTO reports (id,title,description,category,severity,status,address,landmark,latitude,longitude,affected_people,confirmations,reporter_id,image_key,priority_score,created_at,updated_at) VALUES (?,?,?,?,?,'reported',?,?,?,?,?,1,?,?,?, ?,?)`)
-    .bind(id,text(body.title),text(body.description),text(body.category),text(body.severity),text(body.address),text(body.landmark)||null,Number(body.latitude),Number(body.longitude),Number(body.affectedPeople ?? 1),'public-resident',text(body.imageKey)||null,score,now,now).run();
+    .bind(id,text(body.title),text(body.description),text(body.category),text(body.severity),text(body.address),text(body.landmark)||null,latitude,longitude,affectedPeople,'public-resident',text(body.imageKey)||null,score,now,now).run();
   const report = await database().prepare('SELECT * FROM reports WHERE id = ?').bind(id).first();
   return json({ report }, 201);
 }

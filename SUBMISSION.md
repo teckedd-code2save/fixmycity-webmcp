@@ -54,7 +54,7 @@ We also made integrations honest. Missing map configuration is reported as unava
 ## Accomplishments
 
 - A complete resident-to-resolution workflow across three actor surfaces
-- Eight WebMCP tools detected by the browser with typed schemas and safety annotations
+- Ten WebMCP tools detected by the browser with typed schemas and safety annotations
 - Evidence-backed duplicate detection using category, distance, time, and landmark context
 - Priority route planning with a human approval checkpoint and field-team handoff
 - Persistent reports, assignments, proposals, audit updates, and photo evidence

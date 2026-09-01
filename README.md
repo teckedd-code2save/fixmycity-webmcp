@@ -63,12 +63,13 @@ The local Cloudflare runtime provisions isolated D1 and R2 bindings. It does not
 ## Verify
 
 ```bash
-npm run lint
-npm run build
+npm test
 npm audit --omit=dev
 ```
 
-Then exercise the real workflow through the UI or APIs: create a report, confirm it, plan a route, approve assignment, and update it from the inspector portal.
+`npm test` lints and builds the app, then boots an isolated local Cloudflare worker with temporary D1/R2 state and exercises report validation, nearby search, corroboration, duplicate proposals and approval, live road routing, assignment, inspector resolution, uploads, directions, and weather. The temporary state is removed after every run.
+
+Then exercise the actor and WebMCP journeys in the browser: create a report, confirm it, plan a route, approve assignment, and update it from the inspector portal.
 
 Workflow tests use the isolated local D1/R2 environment, where test reports cannot appear on the public site. Production verification is read-only: route health, empty-state behavior, map and weather integrations, WebMCP discovery, and actor-page rendering. A real production report is created only from an actual resident submission.
 
