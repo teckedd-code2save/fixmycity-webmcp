@@ -157,6 +157,7 @@ describe('FixMyCity isolated API workflow', { concurrency: 1 }, () => {
     assert.equal(result.response.status, 200);
     assert.equal(result.body.assignments.length, routeProposal.stops.length);
     assert.ok(result.body.assignments.every((assignment) => assignment.status === 'accepted'));
+    assert.ok(result.body.assignments.every((assignment) => assignment.reportStatus === 'assigned'));
   });
 
   test('supports inspector progress through resolution', async () => {
@@ -171,6 +172,10 @@ describe('FixMyCity isolated API workflow', { concurrency: 1 }, () => {
     assert.equal(result.response.status, 200);
     assert.equal(result.body.report.status, 'resolved');
     assert.ok(result.body.updates.some((update) => update.action === 'status:resolved'));
+
+    result = await jsonRequest('/api/assignments?inspectorId=FIELD-TEAM-01');
+    assert.equal(result.response.status, 200);
+    assert.ok(result.body.assignments.every((assignment) => assignment.reportStatus === 'resolved'));
 
     result = await jsonRequest('/api/routes/plan', 'POST', { maxStops: 4 });
     assert.equal(result.response.status, 409);
