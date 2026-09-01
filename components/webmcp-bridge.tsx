@@ -18,6 +18,7 @@ async function api(path:string, init?:RequestInit) {
   const result = await response.json() as Record<string,unknown> & {error?:string}; if (!response.ok) throw new Error(result.error ?? 'FixMyCity could not complete the action.'); return result;
 }
 function textValue(value:unknown){return typeof value==='string'?value:''}
+function currentLocation(){return new Promise<{latitude:number;longitude:number;accuracyMetres:number;capturedAt:string;stored:false}>((resolve,reject)=>{if(!navigator.geolocation){reject(new Error('Location is unavailable in this browser.'));return}navigator.geolocation.getCurrentPosition(position=>resolve({latitude:position.coords.latitude,longitude:position.coords.longitude,accuracyMetres:Math.round(position.coords.accuracy),capturedAt:new Date(position.timestamp).toISOString(),stored:false}),error=>reject(new Error(error.code===error.PERMISSION_DENIED?'Location permission was not granted.':'The browser could not determine the current location.')),{enableHighAccuracy:true,timeout:10000,maximumAge:300000})})}
 
 export function WebMCPBridge() {
   useEffect(() => {
@@ -26,10 +27,22 @@ export function WebMCPBridge() {
     const controller = new AbortController();
     const tools:Tool[] = [
       {
+        name:'get_current_location',title:'Get the user’s current location',annotations:{readOnlyHint:true},
+        description:'Ask the browser for the user’s current coordinates after permission. This returns precise location to the requesting agent but does not store it in FixMyCity.',
+        inputSchema:{type:'object',properties:{},additionalProperties:false},
+        execute:async()=>{const result=await currentLocation();notify('get_current_location',result);return result},
+      },
+      {
         name:'get_city_summary', title:'Get city operations summary', annotations:{readOnlyHint:true},
         description:'Return the current health and volume of the FixMyCity civic operations workspace. Use this to orient before planning actions.',
         inputSchema:{type:'object',properties:{},additionalProperties:false},
         execute:async()=>api('/api/health'),
+      },
+      {
+        name:'find_nearby_reports',title:'Find nearby civic reports',annotations:{readOnlyHint:true,untrustedContentHint:true},
+        description:'Find unresolved resident reports within a radius of supplied coordinates. Use coordinates returned by get_current_location only after the user permits location access.',
+        inputSchema:{type:'object',properties:{latitude:{type:'number',minimum:-90,maximum:90},longitude:{type:'number',minimum:-180,maximum:180},radiusMetres:{type:'integer',minimum:50,maximum:5000,default:1000},category:{type:'string',enum:['flooding','drainage','road','lighting','waste']}},required:['latitude','longitude'],additionalProperties:false},
+        execute:async(input)=>{const params=new URLSearchParams({latitude:String(Number(input.latitude)),longitude:String(Number(input.longitude)),radiusMetres:String(Number(input.radiusMetres??1000))});if(input.category)params.set('category',textValue(input.category));return api(`/api/reports?${params}`)},
       },
       {
         name:'search_civic_reports', title:'Search civic reports', annotations:{readOnlyHint:true,untrustedContentHint:true},

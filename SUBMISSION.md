@@ -28,7 +28,7 @@ The complete loop uses persistent D1 records, R2 evidence storage, live weather 
 
 ## How we used WebMCP
 
-The operations page registers eight typed tools through `document.modelContext.registerTool`. Read tools expose city health and report search. Planning tools produce reviewable duplicate and route proposals. Action tools create reports, approve merges, assign routes, and record status changes.
+The product registers ten typed tools through `document.modelContext.registerTool`. Permission-gated tools locate the user and find nearby reports, read tools expose city health and report search, planning tools produce reviewable duplicate and route proposals, and action tools create reports, approve merges, assign routes, and record status changes.
 
 The key design choice is separating preparation from execution. An agent can autonomously investigate and propose. High-impact tools require a proposal ID and explicit human approval, which the server validates again. Resident-authored descriptions are also marked as untrusted content so the agent treats them as evidence, never as instructions.
 
@@ -42,7 +42,7 @@ This is not a chatbot placed beside a dashboard. WebMCP makes the working civic 
 - Leaflet and OpenStreetMap for live incident maps
 - Project OSRM for road-following route geometry
 - Open-Meteo with MET Norway fallback for current Accra conditions and rain-watch context
-- WebMCP imperative API for eight discoverable, typed browser tools
+- WebMCP imperative API for ten discoverable, typed browser tools
 - Sites for a single hosted environment shared by residents, operators, inspectors, and judges
 
 ## Challenges
@@ -73,7 +73,7 @@ The next production step is municipality-managed role assignment on top of the i
 
 1. **0:00–0:12 — The problem.** Show three actors and explain that scattered citizen signals rarely become coordinated action.
 2. **0:12–0:28 — Resident.** Open `/resident`, pin and submit a blocked-drain report with a photo, then corroborate a nearby signal.
-3. **0:28–0:48 — WebMCP discovery.** Show that the browser sees eight tools. Ask the agent to search flooding reports and find likely duplicates.
+3. **0:28–0:48 — WebMCP discovery.** Show that the browser sees ten tools. Permit location access, find nearby reports, then ask the agent to investigate likely duplicates.
 4. **0:48–1:05 — Human review.** Open the proposal evidence, approve the merge, simulate a priority route, and explicitly approve assignment.
 5. **1:05–1:20 — Field action.** Open `/inspector`, select the assigned stop, start inspection, add a note, and resolve it.
 6. **1:20–1:30 — Proof.** Return to operations and show the persisted status. Close with: “The agent did not replace the city team; WebMCP connected every actor to the same accountable workflow.”
@@ -82,7 +82,7 @@ The next production step is municipality-managed role assignment on top of the i
 
 - [ ] Public deployment works in a signed-out browser
 - [ ] Resident report, photo upload, duplicate proposal, route assignment, and inspector resolution all pass in production
-- [ ] All eight WebMCP tools are discoverable on the deployed URL
+- [ ] All ten WebMCP tools are discoverable on the deployed URL
 - [ ] Keyless maps and road-following directions render in production
 - [ ] GitHub repository is public and contains no secrets
 - [ ] Demo video is uploaded to YouTube and plays without sign-in

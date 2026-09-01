@@ -24,7 +24,7 @@ export async function GET() {
       },
       activeAssignments: assignments?.count ?? 0,
       pendingProposals: proposals?.count ?? 0,
-      webmcp: { registeredOnClient: true, toolCount: 8 },
+      webmcp: { registeredOnClient: true, toolCount: 10 },
       timestamp: new Date().toISOString(),
     });
   } catch (error) {

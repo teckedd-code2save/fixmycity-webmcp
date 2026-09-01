@@ -17,7 +17,9 @@ The product demonstrates why WebMCP matters: the same working interface used by 
 
 | Tool | Purpose | Changes records? |
 | --- | --- | --- |
+| `get_current_location` | Request precise browser location with user permission; never stores it | No |
 | `get_city_summary` | Read live workspace health and counts | No |
+| `find_nearby_reports` | Rank unresolved reports around permitted coordinates | No |
 | `search_civic_reports` | Search resident evidence and workflow state | No |
 | `find_duplicate_reports` | Create an evidence-backed merge proposal | Proposal only |
 | `simulate_inspection_route` | Create an urgency-and-distance route proposal | Proposal only |
@@ -27,6 +29,8 @@ The product demonstrates why WebMCP matters: the same working interface used by 
 | `update_report_status` | Record a field workflow update | Yes |
 
 Resident-authored text is marked as untrusted content in the tool annotations. The two highest-impact actions require an existing proposal plus a literal human-approval flag, and the server independently enforces that flag.
+
+Precise location is permission-gated by the browser. The location tool returns coordinates only to the requesting agent for the current action; FixMyCity does not persist them unless the user subsequently submits a report containing that location.
 
 ## Architecture
 

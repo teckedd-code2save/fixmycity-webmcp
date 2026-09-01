@@ -1,5 +1,6 @@
-import { database, ensureDatabase, json, priorityScore, reportId } from '@/lib/civic-db';
+import { database, distanceMetres, ensureDatabase, json, priorityScore, reportId } from '@/lib/civic-db';
 const text = (value:unknown) => typeof value === 'string' ? value : '';
+type ReportRow={id:string;title:string;description:string;category:string;severity:string;status:string;address:string;landmark:string|null;latitude:number;longitude:number;affectedPeople:number;confirmations:number;imageKey:string|null;priorityScore:number;createdAt:number;updatedAt:number};
 
 export async function GET(request: Request) {
   await ensureDatabase();
@@ -7,11 +8,14 @@ export async function GET(request: Request) {
   const category = url.searchParams.get('category');
   const status = url.searchParams.get('status');
   const query = url.searchParams.get('q');
+  const latitudeValue=url.searchParams.get('latitude');const longitudeValue=url.searchParams.get('longitude');const latitude=Number(latitudeValue);const longitude=Number(longitudeValue);const hasLocation=latitudeValue!==null&&longitudeValue!==null&&Number.isFinite(latitude)&&Number.isFinite(longitude);
+  const radiusMetres=Math.max(50,Math.min(5000,Number(url.searchParams.get('radiusMetres')??1000)));
   const clauses = ['duplicate_of IS NULL']; const values: unknown[] = [];
   if (category) { clauses.push('category = ?'); values.push(category); }
   if (status) { clauses.push('status = ?'); values.push(status); }
   if (query) { clauses.push('(title LIKE ? OR description LIKE ? OR address LIKE ? OR landmark LIKE ?)'); values.push(...Array(4).fill(`%${query}%`)); }
-  const result = await database().prepare(`SELECT id,title,description,category,severity,status,address,landmark,latitude,longitude,affected_people AS affectedPeople,confirmations,image_key AS imageKey,priority_score AS priorityScore,created_at AS createdAt,updated_at AS updatedAt FROM reports WHERE ${clauses.join(' AND ')} ORDER BY priority_score DESC, created_at DESC LIMIT 100`).bind(...values).all();
+  const result = await database().prepare(`SELECT id,title,description,category,severity,status,address,landmark,latitude,longitude,affected_people AS affectedPeople,confirmations,image_key AS imageKey,priority_score AS priorityScore,created_at AS createdAt,updated_at AS updatedAt FROM reports WHERE ${clauses.join(' AND ')} ORDER BY priority_score DESC, created_at DESC LIMIT 100`).bind(...values).all<ReportRow>();
+  if(hasLocation){const center={latitude,longitude};const reports=(result.results??[]).filter(report=>report.status!=='resolved').map(report=>({...report,distanceMetres:Math.round(distanceMetres(center,report))})).filter(report=>report.distanceMetres<=radiusMetres).sort((a,b)=>a.distanceMetres-b.distanceMetres||b.priorityScore-a.priorityScore);return json({center,radiusMetres,reports})}
   return json({ reports: result.results });
 }
 
