@@ -1,21 +1,12 @@
 'use client';
 
 import { SyntheticEvent, useEffect, useState } from 'react';
-import Link from 'next/link';
-import {
-  Bot,
-  Camera,
-  CheckCircle2,
-  MapPin,
-  Radio,
-  Send,
-  Sparkles,
-} from 'lucide-react';
+import { Bot, Camera, CheckCircle2, Radio, Send, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { LocationPicker } from '@/components/location-picker';
-import { ActorNavigation } from '@/components/actor-navigation';
+import { WorkspaceHeader } from '@/components/workspace-header';
 
 type Report = {
   id: string;
@@ -99,15 +90,7 @@ export function ResidentPortal() {
   }
   return (
     <main className="portal-page">
-      <header className="portal-header">
-        <Link href="/" className="portal-brand">
-          <span>
-            <MapPin />
-          </span>
-          <strong>FixMyCity</strong>
-        </Link>
-        <ActorNavigation active="resident" />
-      </header>
+      <WorkspaceHeader active="resident" />
       <section className="resident-hero">
         <div>
           <div className="eyebrow">

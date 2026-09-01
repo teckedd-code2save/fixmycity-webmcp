@@ -11,7 +11,7 @@ import {
   Timer,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { ActorNavigation } from '@/components/actor-navigation';
+import { WorkspaceHeader } from '@/components/workspace-header';
 type Assignment = {
   id: string;
   routeId: string;
@@ -73,16 +73,7 @@ export function InspectorPortal() {
   }
   return (
     <main className="inspector-page">
-      <header className="inspector-top">
-        <ActorNavigation active="inspector" />
-        <div className="inspector-identity">
-          <div>01</div>
-          <span>
-            <strong>Field Team 01</strong>
-            <small>Inspector workspace · Motorbike</small>
-          </span>
-        </div>
-      </header>
+      <WorkspaceHeader active="inspector" />
       <section className="inspector-banner">
         <div>
           <div className="eyebrow">
