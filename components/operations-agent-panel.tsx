@@ -1,25 +1,328 @@
 'use client';
-import { useEffect,useState } from 'react';
-import { AlertTriangle,Bot,Map,Sparkles } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { AlertTriangle, Bot, CheckCircle2, Map, Sparkles } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Dialog,DialogContent,DialogDescription,DialogFooter,DialogHeader,DialogTitle } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
-type Duplicate={id:string;reportIds:string[];distanceMetres:number;confidence:number;evidence:string[];status:string};
-type RoutePlan={proposalId:string;routeId:string;stops:Array<{id:string;title:string}>;durationMinutes:number;totalDistanceMetres:number};
-async function responseJson<T>(response:Response){return await response.json() as T}
-export function OperationsAgentPanel(){
- const [duplicate,setDuplicate]=useState<Duplicate|null>(null);const [route,setRoute]=useState<RoutePlan|null>(null);const [busy,setBusy]=useState('');const [review,setReview]=useState<'merge'|'route'|null>(null);const [notice,setNotice]=useState('');
- useEffect(()=>{const handler=(event:Event)=>{const detail=(event as CustomEvent).detail;if(detail.name==='find_duplicate_reports')setDuplicate(detail.payload.proposals?.[0]??null);if(detail.name==='simulate_inspection_route')setRoute(detail.payload)};window.addEventListener('fixmycity:tool-result',handler);return()=>window.removeEventListener('fixmycity:tool-result',handler)},[]);
- async function findDuplicates(){setBusy('duplicates');const result=await fetch('/api/proposals/duplicates',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({radiusMetres:150})}).then(async r=>await responseJson<{proposals:Duplicate[]}>(r));setDuplicate(result.proposals?.[0]??null);setBusy('')}
- async function planRoute(){setBusy('route');const result=await fetch('/api/routes/plan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({maxStops:4})}).then(async r=>await responseJson<RoutePlan>(r));setRoute(result);window.dispatchEvent(new CustomEvent('fixmycity:tool-result',{detail:{name:'simulate_inspection_route',payload:result}}));setBusy('')}
- async function approve(){if(review==='merge'&&duplicate){const response=await fetch(`/api/proposals/${duplicate.id}/approve`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({confirm:true})});const result=await responseJson<{mergedReportIds:string[];canonicalReportId:string;error?:string}>(response);setNotice(response.ok?`${result.mergedReportIds.length} duplicate reports merged into ${result.canonicalReportId}.`:result.error??'Merge failed.');if(response.ok)setDuplicate(null)}if(review==='route'&&route){const response=await fetch('/api/routes/assign',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({proposalId:route.proposalId,inspectorId:'FIELD-TEAM-01',confirm:true})});const result=await responseJson<{assignments:number;error?:string}>(response);setNotice(response.ok?`${result.assignments} stops assigned to Field Team 01.`:result.error??'Assignment failed.');if(response.ok)setRoute(null)}setReview(null)}
- return <aside className="agent-panel" aria-label="Agent proposals"><div className="agent-header"><div className="agent-icon"><Bot/></div><div><h2>Civic agent</h2><p><span/> Connected through WebMCP</p></div></div>
- <div className="agent-prompt"><p>Ask the agent to investigate, plan or coordinate.</p><div>“Find flood reports near schools and prepare an inspection route.”</div><button onClick={()=>{void findDuplicates();void planRoute()}}><Sparkles/> Run civic analysis</button></div>
- {notice&&<div className="agent-notice">{notice}</div>}<div className="proposal-title"><span>Awaiting review</span><Badge variant="secondary">{Number(Boolean(duplicate))+Number(Boolean(route))}</Badge></div>
- {duplicate?<article className="proposal-card featured-proposal"><div className="proposal-type"><AlertTriangle/> Possible duplicates</div><h3>{duplicate.reportIds.length} reports may describe one incident</h3><p>{duplicate.evidence.join(' · ')}</p><div className="evidence-row">{duplicate.reportIds.map(id=><span key={id}>{id}</span>)}</div><div className="confidence"><span>Confidence</span><strong>{duplicate.confidence}%</strong></div><div className="confidence-track"><i style={{width:`${duplicate.confidence}%`}}/></div><div className="proposal-actions"><Button variant="outline" onClick={findDuplicates}>Recheck</Button><Button onClick={()=>setReview('merge')}>Review merge</Button></div></article>:<article className="proposal-card empty-proposal"><AlertTriangle/><div><h3>Duplicate analysis</h3><p>Compare locations, categories, timing and landmarks.</p></div><Button variant="outline" onClick={findDuplicates} disabled={busy==='duplicates'}>{busy==='duplicates'?'Checking…':'Run analysis'}</Button></article>}
- {route?<article className="proposal-card"><div className="proposal-type blue"><Map/> Route ready</div><h3>Morning inspection route</h3><p>{route.stops.length} priority incidents · {route.durationMinutes} min · {(route.totalDistanceMetres/1000).toFixed(1)} km</p><div className="route-line">{route.stops.map(stop=><i key={stop.id}/>)}</div><div className="proposal-actions"><Button variant="outline" onClick={planRoute}>Replan</Button><Button onClick={()=>setReview('route')}>Assign team</Button></div></article>:<article className="proposal-card empty-proposal"><Map/><div><h3>Inspection route</h3><p>Order urgent stops by distance and impact.</p></div><Button variant="outline" onClick={planRoute} disabled={busy==='route'}>{busy==='route'?'Planning…':'Plan route'}</Button></article>}
- <p className="agent-disclaimer">Agent suggestions never change city records without human approval.</p>
- <Dialog open={review!==null} onOpenChange={(open)=>!open&&setReview(null)}><DialogContent><DialogHeader><DialogTitle>{review==='merge'?'Approve report merge?':'Assign this inspection route?'}</DialogTitle><DialogDescription>{review==='merge'?'This will mark the related reports as duplicates and preserve one canonical incident with a complete audit trail.':'This will assign Field Team 01, create field tasks, and change the included reports to assigned.'}</DialogDescription></DialogHeader><DialogFooter><Button variant="outline" onClick={()=>setReview(null)}>Cancel</Button><Button onClick={approve}>Confirm action</Button></DialogFooter></DialogContent></Dialog>
- </aside>
+type Duplicate = {
+  id: string;
+  reportIds: string[];
+  distanceMetres: number;
+  confidence: number;
+  evidence: string[];
+  status: string;
+};
+type RoutePlan = {
+  proposalId: string;
+  routeId: string;
+  stops: Array<{ id: string; title: string }>;
+  durationMinutes: number;
+  totalDistanceMetres: number;
+};
+type Activity = {
+  impact: {
+    agentProposals: number;
+    approvedAgentPlans: number;
+    signalsUnified: number;
+    routesPrepared: number;
+    fieldAssignments: number;
+    activeInspections: number;
+  };
+  events: Array<{
+    id: string;
+    actor: string;
+    title: string;
+    detail: string;
+    occurredAt: number;
+  }>;
+};
+async function responseJson<T>(response: Response) {
+  return (await response.json()) as T;
+}
+export function OperationsAgentPanel() {
+  const [duplicate, setDuplicate] = useState<Duplicate | null>(null);
+  const [route, setRoute] = useState<RoutePlan | null>(null);
+  const [activity, setActivity] = useState<Activity | null>(null);
+  const [busy, setBusy] = useState('');
+  const [review, setReview] = useState<'merge' | 'route' | null>(null);
+  const [notice, setNotice] = useState('');
+  useEffect(() => {
+    void fetch('/api/activity')
+      .then(async (response) => await responseJson<Activity>(response))
+      .then(setActivity)
+      .catch(() => undefined);
+  }, []);
+  useEffect(() => {
+    const handler = (event: Event) => {
+      const detail = (event as CustomEvent).detail;
+      if (detail.name === 'find_duplicate_reports')
+        setDuplicate(detail.payload.proposals?.[0] ?? null);
+      if (detail.name === 'simulate_inspection_route') setRoute(detail.payload);
+    };
+    window.addEventListener('fixmycity:tool-result', handler);
+    return () => window.removeEventListener('fixmycity:tool-result', handler);
+  }, []);
+  async function findDuplicates() {
+    setBusy('duplicates');
+    const result = await fetch('/api/proposals/duplicates', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ radiusMetres: 150 }),
+    }).then(async (r) => await responseJson<{ proposals: Duplicate[] }>(r));
+    setDuplicate(result.proposals?.[0] ?? null);
+    setBusy('');
+  }
+  async function planRoute() {
+    setBusy('route');
+    const result = await fetch('/api/routes/plan', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ maxStops: 4 }),
+    }).then(async (r) => await responseJson<RoutePlan>(r));
+    setRoute(result);
+    window.dispatchEvent(
+      new CustomEvent('fixmycity:tool-result', {
+        detail: { name: 'simulate_inspection_route', payload: result },
+      }),
+    );
+    setBusy('');
+  }
+  async function approve() {
+    if (review === 'merge' && duplicate) {
+      const response = await fetch(`/api/proposals/${duplicate.id}/approve`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ confirm: true }),
+      });
+      const result = await responseJson<{
+        mergedReportIds: string[];
+        canonicalReportId: string;
+        error?: string;
+      }>(response);
+      setNotice(
+        response.ok
+          ? `${result.mergedReportIds.length} duplicate reports merged into ${result.canonicalReportId}.`
+          : (result.error ?? 'Merge failed.'),
+      );
+      if (response.ok) setDuplicate(null);
+    }
+    if (review === 'route' && route) {
+      const response = await fetch('/api/routes/assign', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          proposalId: route.proposalId,
+          inspectorId: 'FIELD-TEAM-01',
+          confirm: true,
+        }),
+      });
+      const result = await responseJson<{
+        assignments: number;
+        error?: string;
+      }>(response);
+      setNotice(
+        response.ok
+          ? `${result.assignments} stops assigned to Field Team 01.`
+          : (result.error ?? 'Assignment failed.'),
+      );
+      if (response.ok) setRoute(null);
+    }
+    setReview(null);
+  }
+  return (
+    <aside className="agent-panel" aria-label="Agent proposals">
+      <div className="agent-header">
+        <div className="agent-icon">
+          <Bot />
+        </div>
+        <div>
+          <h2>Civic agent</h2>
+          <p>
+            <span /> Connected through WebMCP
+          </p>
+        </div>
+      </div>
+      {activity?.events.length ? (
+        <section className="agent-impact">
+          <div className="agent-impact-title">
+            <div>
+              <span>Live WebMCP impact</span>
+              <strong>From resident signal to field action</strong>
+            </div>
+            <CheckCircle2 />
+          </div>
+          <p>
+            The agent worked on the same civic records people use—no copied data
+            or separate bot backend.
+          </p>
+          <div className="impact-metrics">
+            <div>
+              <strong>{activity.impact.signalsUnified}</strong>
+              <span>signal unified</span>
+            </div>
+            <div>
+              <strong>{activity.impact.routesPrepared}</strong>
+              <span>route prepared</span>
+            </div>
+            <div>
+              <strong>{activity.impact.activeInspections}</strong>
+              <span>inspection active</span>
+            </div>
+          </div>
+          <div className="agent-timeline">
+            {activity.events.slice(0, 5).map((event) => (
+              <article key={event.id}>
+                <i />
+                <div>
+                  <span>{event.actor}</span>
+                  <strong>{event.title}</strong>
+                  <small>{event.detail}</small>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+      ) : (
+        <div className="agent-prompt">
+          <p>Ask the agent to investigate, plan or coordinate.</p>
+          <div>
+            “Find flood reports near schools and prepare an inspection route.”
+          </div>
+          <button
+            onClick={() => {
+              void findDuplicates();
+              void planRoute();
+            }}
+          >
+            <Sparkles /> Run civic analysis
+          </button>
+        </div>
+      )}
+      {notice && <div className="agent-notice">{notice}</div>}
+      <div className="proposal-title">
+        <span>Awaiting review</span>
+        <Badge variant="secondary">
+          {Number(Boolean(duplicate)) + Number(Boolean(route))}
+        </Badge>
+      </div>
+      {duplicate ? (
+        <article className="proposal-card featured-proposal">
+          <div className="proposal-type">
+            <AlertTriangle /> Possible duplicates
+          </div>
+          <h3>
+            {duplicate.reportIds.length} reports may describe one incident
+          </h3>
+          <p>{duplicate.evidence.join(' · ')}</p>
+          <div className="evidence-row">
+            {duplicate.reportIds.map((id) => (
+              <span key={id}>{id}</span>
+            ))}
+          </div>
+          <div className="confidence">
+            <span>Confidence</span>
+            <strong>{duplicate.confidence}%</strong>
+          </div>
+          <div className="confidence-track">
+            <i style={{ width: `${duplicate.confidence}%` }} />
+          </div>
+          <div className="proposal-actions">
+            <Button variant="outline" onClick={findDuplicates}>
+              Recheck
+            </Button>
+            <Button onClick={() => setReview('merge')}>Review merge</Button>
+          </div>
+        </article>
+      ) : (
+        <article className="proposal-card empty-proposal">
+          <AlertTriangle />
+          <div>
+            <h3>Duplicate analysis</h3>
+            <p>Compare locations, categories, timing and landmarks.</p>
+          </div>
+          <Button
+            variant="outline"
+            onClick={findDuplicates}
+            disabled={busy === 'duplicates'}
+          >
+            {busy === 'duplicates' ? 'Checking…' : 'Run analysis'}
+          </Button>
+        </article>
+      )}
+      {route ? (
+        <article className="proposal-card">
+          <div className="proposal-type blue">
+            <Map /> Route ready
+          </div>
+          <h3>Morning inspection route</h3>
+          <p>
+            {route.stops.length} priority incidents · {route.durationMinutes}{' '}
+            min · {(route.totalDistanceMetres / 1000).toFixed(1)} km
+          </p>
+          <div className="route-line">
+            {route.stops.map((stop) => (
+              <i key={stop.id} />
+            ))}
+          </div>
+          <div className="proposal-actions">
+            <Button variant="outline" onClick={planRoute}>
+              Replan
+            </Button>
+            <Button onClick={() => setReview('route')}>Assign team</Button>
+          </div>
+        </article>
+      ) : (
+        <article className="proposal-card empty-proposal">
+          <Map />
+          <div>
+            <h3>Inspection route</h3>
+            <p>Order urgent stops by distance and impact.</p>
+          </div>
+          <Button
+            variant="outline"
+            onClick={planRoute}
+            disabled={busy === 'route'}
+          >
+            {busy === 'route' ? 'Planning…' : 'Plan route'}
+          </Button>
+        </article>
+      )}
+      <p className="agent-disclaimer">
+        Agent suggestions never change city records without human approval.
+      </p>
+      <Dialog
+        open={review !== null}
+        onOpenChange={(open) => !open && setReview(null)}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {review === 'merge'
+                ? 'Approve report merge?'
+                : 'Assign this inspection route?'}
+            </DialogTitle>
+            <DialogDescription>
+              {review === 'merge'
+                ? 'This will mark the related reports as duplicates and preserve one canonical incident with a complete audit trail.'
+                : 'This will assign Field Team 01, create field tasks, and change the included reports to assigned.'}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setReview(null)}>
+              Cancel
+            </Button>
+            <Button onClick={approve}>Confirm action</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </aside>
+  );
 }
